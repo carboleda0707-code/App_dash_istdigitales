@@ -69,8 +69,12 @@ app.include_router(apps_routes.router)
 
 @app.get("/")
 def home():
-    """Redirige automáticamente al Dashboard oficial de Streamlit en el puerto 8501"""
-    return RedirectResponse(url="http://localhost:8501")
+    return {
+        "sistema": "IstDigitales Control Center",
+        "estado": "Activo en Railway",
+        "postgresql": "Conectado",
+        "documentdocs": "/docs"
+    }
 
 @app.get("/api/v1/r2/status")
 def verificar_r2():
