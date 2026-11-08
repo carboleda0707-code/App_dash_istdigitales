@@ -1,0 +1,22 @@
+[
+  {
+    "nombre": "Bookea",
+    "slug": "bookea",
+    "categoria": "Reservas & SaaS",
+    "bucket_r2": "bookea-media",
+    "dominio_api": "https://bookea.up.railway.app/api",
+    "panel_admin_url": "https://bookea.up.railway.app",
+    "web_url": "https://bookea.ec",
+    "estado": "activo"
+  },
+  {
+    "nombre": "Fajas Isabella",
+    "slug": "fajas-isabella",
+    "categoria": "E-commerce",
+    "bucket_r2": "fajas-isabella-media",
+    "dominio_api": "https://fajasisabella.up.railway.app/api",
+    "panel_admin_url": "https://fajasisabella.up.railway.app",
+    "web_url": "https://fajasisabellaec.com",
+    "estado": "activo"
+  }
+]
