@@ -1,6 +1,39 @@
-import streamlit as st
+# Actualicemos dashboard.py para incluir la inicialización y siembra nativa sin perder la limpieza ni variables quemadas.
+dashboard_content = """import streamlit as st
 import requests
+import os
+import json
 from config.config_loader import cfg
+
+# Inicialización automática de la base de datos PostgreSQL y siembra de apps_seed.json
+try:
+    from config.database import engine, Base, get_db
+    from sqlalchemy import text
+    
+    Base.metadata.create_all(bind=engine)
+    
+    seed_path = "apps_seed.json"
+    if os.path.exists(seed_path):
+        db = next(get_db())
+        try:
+            count_result = db.execute(text("SELECT COUNT(*) FROM apps_master;")).scalar()
+            if count_result == 0:
+                with open(seed_path, "r", encoding="utf-8") as f:
+                    apps_list = json.load(f)
+                for app in apps_list:
+                    query = text(\"\"\"
+                        INSERT INTO apps_master (nombre, slug, categoria, bucket_r2, dominio_api, panel_admin_url, web_url, estado)
+                        VALUES (:nombre, :slug, :categoria, :bucket_r2, :dominio_api, :panel_admin_url, :web_url, :estado)
+                        ON CONFLICT (slug) DO NOTHING;
+                    \"\"\")
+                    db.execute(query, app)
+                db.commit()
+        except Exception:
+            db.rollback()
+        finally:
+            db.close()
+except Exception as e:
+    print(f"Info DB Init: {e}")
 
 st.set_page_config(
     page_title=cfg.get("system", "app_title", "IstDigitales Hub"),
@@ -9,7 +42,7 @@ st.set_page_config(
 )
 
 # Estilos CSS oscuros IstDigitales
-st.markdown("""
+st.markdown(\"\"\"
     <style>
     .stApp { background-color: #020617 !important; color: #FFFFFF !important; }
     p, span, label, h1, h2, h3, h4, h5, h6, .stMarkdown { color: #FFFFFF !important; }
@@ -35,11 +68,11 @@ st.markdown("""
     div[data-testid="stMetricLabel"] { color: #94A3B8 !important; font-weight: 600 !important; }
     div[data-testid="stMetricDelta"] { color: #34D399 !important; }
     </style>
-""", unsafe_allow_html=True)
+\"\"\", unsafe_allow_html=True)
 
 # 1. NAVBAR SUPERIOR (Lee del config.ini)
 superadmin_user = cfg.get("system", "superadmin_name", "Carlos Arboleda")
-st.markdown(f"""
+st.markdown(f\"\"\"
     <div style="display: flex; justify-content: space-between; align-items: center; padding-bottom: 15px; border-bottom: 1px solid #1E293B; margin-bottom: 25px;">
         <div style="display: flex; align-items: center; gap: 12px;">
             <div style="background: linear-gradient(135deg, #06B6D4, #2563EB); width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: white;">⚡</div>
@@ -56,7 +89,7 @@ st.markdown(f"""
             <span style="color: #38BDF8; font-weight: bold; border-left: 1px solid #334155; padding-left: 15px;">{superadmin_user}</span>
         </div>
     </div>
-""", unsafe_allow_html=True)
+\"\"\", unsafe_allow_html=True)
 
 # TÍTULO PRINCIPAL
 col_title, col_btn = st.columns([3, 1])
@@ -112,7 +145,7 @@ apps_filtradas = [
     if busqueda.lower() in a.get("nombre", "").lower() or busqueda.lower() in a.get("slug", "").lower()
 ]
 if estado_filtro != "Todas":
-    apps_filtradas = [a for a in apps_filtradas if a.get("estado") == estado_filtro]
+    apps_filtradas = [a for a in apps_filtradas if a.get("estado"] == estado_filtro]
 
 st.markdown("<h3 style='color:#FFFFFF;'>🚀 Ecosistema de Aplicaciones Web Activas</h3>", unsafe_allow_html=True)
 
@@ -126,14 +159,14 @@ else:
                 st.markdown(f"<span style='color:#06B6D4; font-size:11px; font-weight:700;'>📂 {app.get('categoria', 'General').upper()}</span>", unsafe_allow_html=True)
                 st.markdown(f"<h4 style='color:#FFFFFF; margin-top:4px;'>{app.get('nombre')}</h4>", unsafe_allow_html=True)
                 
-                st.markdown(f"""
+                st.markdown(f\"\"\"
                     <div style="font-size:12px; color:#FFFFFF; line-height: 1.6;">
                     - <b>Dominio Web:</b> <span style="color:#22D3EE;">{app.get('web_url', 'N/A')}</span><br>
                     - <b>Endpoint API:</b> <span style="color:#38BDF8;">{app.get('dominio_api', 'N/A')}</span><br>
                     - <b>Bucket Cloudflare R2:</b> <code>{app.get('bucket_r2', 'N/A')}</code><br>
                     - <b>Estado Servidor:</b> <span style="color:#34D399; font-weight:bold;">● {app.get('estado', 'activo').upper()}</span>
                     </div>
-                """, unsafe_allow_html=True)
+                \"\"\", unsafe_allow_html=True)
                 st.write("")
                 
                 col_b1, col_b2 = st.columns(2)
@@ -147,3 +180,9 @@ else:
 # PIE DE PÁGINA
 st.markdown("---")
 st.markdown(f"<p style='text-align: center; color: #94A3B8; font-size: 12px;'>© 2026 IstDigitales - Control Central de Aplicaciones Web, PostgreSQL & Cloudflare R2 ($0 Egress). v{cfg.get('system', 'version')}</p>", unsafe_allow_html=True)
+"""
+
+with open("dashboard.py", "w", encoding="utf-8") as f:
+    f.write(dashboard_content)
+
+print("dashboard.py actualizado correctamente.")
